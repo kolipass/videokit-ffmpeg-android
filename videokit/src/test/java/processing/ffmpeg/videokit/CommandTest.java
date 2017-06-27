@@ -23,7 +23,7 @@ public class CommandTest {
     public void setUp() {
         testPath = getTestFilePath();
 
-        videoKit = spy(new VideoKit());
+        videoKit = spy(new VideoKit(true));
         doReturn(VideoProcessingResult.SUCCESSFUL_RESULT)
                 .when(videoKit).process(Mockito.any(String[].class));
     }

@@ -16,6 +16,7 @@ import android.view.View;
 
 import processing.ffmpeg.videokit.AsyncCommandExecutor;
 import processing.ffmpeg.videokit.Command;
+import processing.ffmpeg.videokit.LogLevel;
 import processing.ffmpeg.videokit.ProcessingListener;
 import processing.ffmpeg.videokit.VideoKit;
 import video_processing.ffmpeg.testing.R;
@@ -28,22 +29,26 @@ public class MainActivity extends AppCompatActivity implements VideoListAdapter.
     private static final int SPAN_COUNT = 3;
     private static final int REQUEST_CODE = 1337;
 
-    private VideoKit videoKit = new VideoKit();
+    private VideoKit videoKit ;
 
     private ProgressDialog progressDialog;
     private View rootView;
     private Model model;
+    private Profiler profiler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Log.d("ARCHITECTURE", System.getProperty("os.arch"));
+        videoKit = new VideoKit();
+        videoKit.setLogLevel(LogLevel.FULL);
 
         setContentView(R.layout.activity_main);
 
         rootView = findViewById(android.R.id.content);
         model = new Model(this);
 
-        Log.d("ARCHITECTURE", System.getProperty("os.arch"));
 
         setupDialog();
         setupListIfWritePermissionGranted();
@@ -99,27 +104,54 @@ public class MainActivity extends AppCompatActivity implements VideoListAdapter.
     @Override
     public void onMediaFileSelected(String path) {
         progressDialog.show();
+        profiler = new Profiler();
+
+        String[] strings = {
+                "-c:v", "libx264", // use h264 video codec
+                "-preset",
+                "ultrafast",
+                "-threads 0",
+                "-profile:v baseline",
+                "-crf 23",
+                "-c:a", "copy", // just copy audio stream
+                "-vf scale=640:-1",
+                "-strict", "-2"
+        };
 
         final Command command = videoKit.createCommand()
                 .overwriteOutput()
                 .inputPath(path)
                 .outputPath(path + POSTFIX)
-                .customCommand("-ss 1 -t 3")
-                .copyVideoCodec()
-                .experimentalFlag()
+                .customCommand(append(strings))
+//                .copyVideoCodec()
+//                .experimentalFlag()
                 .build();
 
         new AsyncCommandExecutor(command, this).execute();
     }
 
+    private String append(String[] strings) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0, stringsLength = strings.length; i < stringsLength; i++) {
+            String s = strings[i];
+            builder.append(s);
+            if (i < stringsLength - 1) {
+                builder.append(" ");
+            }
+        }
+        return builder.toString();
+    }
+
     @Override
     public void onSuccess(String path) {
+        profiler.record("onSuccess");
         progressDialog.dismiss();
         Snackbar.make(rootView, R.string.success_message, Snackbar.LENGTH_LONG).show();
     }
 
     @Override
     public void onFailure(int returnCode) {
+        profiler.record("onFailure");
         progressDialog.dismiss();
         Snackbar.make(rootView, R.string.failure_message, Snackbar.LENGTH_LONG).show();
     }
