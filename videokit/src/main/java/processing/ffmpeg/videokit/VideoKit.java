@@ -5,18 +5,30 @@ package processing.ffmpeg.videokit;
  * Copyright by inFullMobile
  */
 public class VideoKit {
-    static {
-        try {
-            System.loadLibrary("avutil");
-            System.loadLibrary("swresample");
-            System.loadLibrary("avcodec");
-            System.loadLibrary("avformat");
-            System.loadLibrary("swscale");
-            System.loadLibrary("avfilter");
-            System.loadLibrary("avdevice");
-            System.loadLibrary("videokit");
-        } catch (UnsatisfiedLinkError e) {
-            e.printStackTrace();
+    private static boolean init = false;
+
+    private static void loadLibs() {
+        System.loadLibrary("x264");
+        System.loadLibrary("avutil");
+        System.loadLibrary("swresample");
+        System.loadLibrary("avcodec");
+        System.loadLibrary("avformat");
+        System.loadLibrary("swscale");
+        System.loadLibrary("avfilter");
+        System.loadLibrary("avdevice");
+        System.loadLibrary("videokit");
+        init = true;
+    }
+
+    public VideoKit() {
+        if (!init) {
+            loadLibs();
+        }
+    }
+
+    public VideoKit(boolean lazy) {
+        if (!lazy && !init) {
+            loadLibs();
         }
     }
 
@@ -27,6 +39,10 @@ public class VideoKit {
     }
 
     int process(String[] args) {
+        if (!init) {
+            loadLibs();
+        }
+
         return run(logLevel.getValue(), args);
     }
 
