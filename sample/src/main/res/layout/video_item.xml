@@ -16,4 +16,12 @@
         android:scaleType="fitXY"
         tools:ignore="ContentDescription"
         tools:src="@android:color/darker_gray" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:textColor="@android:color/black"
+        android:background="#6fff"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView"/>
 </FrameLayout>

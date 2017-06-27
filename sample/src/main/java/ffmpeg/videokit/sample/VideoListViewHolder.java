@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import video_processing.ffmpeg.testing.R;
 
@@ -15,10 +16,12 @@ import video_processing.ffmpeg.testing.R;
  */
 class VideoListViewHolder extends RecyclerView.ViewHolder {
     private final ImageView image;
+    private final TextView textView;
 
     VideoListViewHolder(View itemView) {
         super(itemView);
         image = (ImageView) itemView.findViewById(R.id.image);
+        textView = (TextView) itemView.findViewById(R.id.textView);
     }
 
     void bind(final VideoListItem videoListItem, final Callbacks callbacks) {
@@ -27,6 +30,7 @@ class VideoListViewHolder extends RecyclerView.ViewHolder {
                     itemView.getContext().getContentResolver(), videoListItem.videoId,
                     MediaStore.Video.Thumbnails.MINI_KIND, null);
 
+            textView.setText(videoListItem.videoPath);
             image.setImageBitmap(thumbnail);
 
             itemView.setOnClickListener(new View.OnClickListener() {
